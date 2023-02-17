@@ -1,24 +1,58 @@
-# Lumen PHP Framework
+# Install Lumen with Composer
 
-[![Build Status](https://travis-ci.org/laravel/lumen-framework.svg)](https://travis-ci.org/laravel/lumen-framework)
-[![Total Downloads](https://img.shields.io/packagist/dt/laravel/lumen-framework)](https://packagist.org/packages/laravel/lumen-framework)
-[![Latest Stable Version](https://img.shields.io/packagist/v/laravel/lumen-framework)](https://packagist.org/packages/laravel/lumen-framework)
-[![License](https://img.shields.io/packagist/l/laravel/lumen)](https://packagist.org/packages/laravel/lumen-framework)
+First, make sure you have Composer installed by running the following command in your terminal:
 
-Laravel Lumen is a stunningly fast PHP micro-framework for building web applications with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Lumen attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as routing, database abstraction, queueing, and caching.
+- ```composer -v```
+- or
+- ```composer --version```
 
-## Official Documentation
+Install Lumen by running:
 
-Documentation for the framework can be found on the [Lumen website](https://lumen.laravel.com/docs).
+- ```composer create-project --prefer-dist laravel/lumen lumen-app```
 
-## Contributing
+# Dockerfile
 
-Thank you for considering contributing to Lumen! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Create a file named Dockerfile in your project's root directory:
 
-## Security Vulnerabilities
+```
+FROM php:8.2.3-fpm-alpine
 
-If you discover a security vulnerability within Lumen, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
+WORKDIR /var/www/html/
 
-## License
+RUN php -r "readfile('http://getcomposer.org/installer');" | php -- --install-dir=/usr/bin/ --filename=composer
 
-The Lumen framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+COPY . .
+
+RUN composer install
+```
+
+# docker-compose.yml
+
+Now, create a docker-compose.yml file in your project’s root directory: 
+
+```
+version: '3.5'
+
+services:
+  lumen:
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor/
+    build: .
+    command: php -S lumen:8000 -t public
+    restart: always
+```
+
+Before building and running our Lumen project on Docker, it is useful to check that you have your machine’s 8000 port free for use. You can check that by running:
+
+```docker ps```
+
+If one of your docker containers is listening on 8000, stop/kill that container or modify the port configs in you docker-compose.yml file.
+
+You can now remove the /vendor/ folder from your project’s directory and run:
+
+```docker-compose up --build```
+
+Now, you can visit localhost:8000 and start creating an amazing API/microservice!
